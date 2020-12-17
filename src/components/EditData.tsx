@@ -14,29 +14,59 @@ const EditData = ({match} : any) => {
     const id = match.params.id;
 
     React.useEffect(() => {
-        axios.get(`http://localhost:3333/employee/${id}`).then(dt => {
-             setData(dt.data)
-        })
+        axios
+          .get(`http://localhost:3333/employee/${id}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((dt) => {
+            setData(dt.data);
+          }).catch(err => {
+             if (err.message === "Request failed with status code 401") {
+               window.location.reload();
+               localStorage.removeItem("token");
+               setTimeout(() => {
+                 window.location.href = "/login";
+               }, 1000);
+             }
+          })
     }, [])
     const dataSubmit = (e: React.FormEvent) => {
         e.preventDefault()
         axios
-          .put(`http://localhost:3333/employee/${id}`, {
-            nama:
-              typeof nama == "undefined" || nama === null  || nama === "" ? data.nama : nama,
-            email:
-              typeof email == "undefined" || email === null || email === ""
-                ? data.email
-                : email,
-            umur:
-              typeof umur == "undefined" || umur === null || umur === "" ? data.umur : umur,
-            gender:
-              typeof gender == "undefined" || gender === null || gender === ""
-                ? data.gender
-                : gender,
-            jobtitle:
-              typeof jobtitle == "undefined" || jobtitle === null || jobtitle === "" ? data.jobtitle : jobtitle,
-          })
+          .put(
+            `http://localhost:3333/employee/${id}`,
+            {
+              nama:
+                typeof nama == "undefined" || nama === null || nama === ""
+                  ? data.nama
+                  : nama,
+              email:
+                typeof email == "undefined" || email === null || email === ""
+                  ? data.email
+                  : email,
+              umur:
+                typeof umur == "undefined" || umur === null || umur === ""
+                  ? data.umur
+                  : umur,
+              gender:
+                typeof gender == "undefined" || gender === null || gender === ""
+                  ? data.gender
+                  : gender,
+              jobtitle:
+                typeof jobtitle == "undefined" ||
+                jobtitle === null ||
+                jobtitle === ""
+                  ? data.jobtitle
+                  : jobtitle,
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          )
           .then((dt) => {
             window.location.href = "/data";
           });
@@ -46,7 +76,7 @@ const EditData = ({match} : any) => {
         console.log(email)
     }
     return (
-        <div className="mt-4">
+        <div className="mt-4 edit-wrap">
             {/* <h1>{match.params.id}</h1> */}
             <h1>Edit Form</h1>
             <button onClick={() => history.push("/data")} className="btn btn-secondary">back</button>

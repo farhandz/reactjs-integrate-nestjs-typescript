@@ -1,26 +1,37 @@
 import * as React from 'react';
 import axios from 'axios'
 import { useHistory } from "react-router-dom";
-
-
-
 const GetData  = () => {
     const [data, setData] = React.useState([] as any[])
-    const history = useHistory();
-    
+    const history = useHistory();    
     React.useEffect(() => {
-        axios.get("http://localhost:3333/employee").then(dt => {
-            setData(dt.data)
-        })
+        axios
+          .get("http://localhost:3333/employee", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          })
+          .then((dt) => {
+            setData(dt.data);
+          }).catch(err => {
+            if(err.message === "Request failed with status code 401") {
+              window.location.reload()
+              localStorage.removeItem("token")
+              alert("WAKTU ANDA HABIS!!!!!!")
+              setTimeout(() => {
+                window.location.href = "/login"
+              }, 1000)
+            }
+          })
     }, [])
 
     return (
       <>
-        <div className="mt-4">
+        <div className="mt-4  table-container ">
           <button className="btn btn-success" onClick={() => history.push("/")}>
             tambah
           </button>
-          <table className="table table-responsive  ">
+          <table className="table wrap-table ">
             <thead>
               <tr>
                 <th scope="col">no</th>
@@ -35,7 +46,7 @@ const GetData  = () => {
             <tbody>
               {data.map((dt, index) => {
                 return (
-                  <tr>
+                  <tr key={index}>
                     <th scope="row">{index + 1}</th>
                     <th>{dt.email}</th>
                     <td>{dt.nama}</td>
